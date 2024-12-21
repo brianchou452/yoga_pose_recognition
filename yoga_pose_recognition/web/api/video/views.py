@@ -16,6 +16,6 @@ async def get_frame(
 ) -> StreamingResponse:
 
     return StreamingResponse(
-        detector.run(),
+        detector.get_frame(),
         media_type="multipart/x-mixed-replace; boundary=frame",
     )

@@ -11,6 +11,8 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe.tasks.python.vision.pose_landmarker import PoseLandmarkerResult
 
+from yoga_pose_recognition.detection.utils.camera import Camera
+
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
@@ -37,35 +39,23 @@ class YogaPoseDetector:
         return cls._instance
 
     def __init__(self) -> None:
-        self.cam = self.init_cam()
+        self.cam = Camera(1)
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(
                 model_asset_path="models/pose_landmarker_full.task",
                 delegate=BaseOptions.Delegate.CPU,
             ),
             running_mode=VisionRunningMode.LIVE_STREAM,
-            result_callback=self.print_result,
+            result_callback=self.on_get_result,
             output_segmentation_masks=True,
         )
         self.landmarker = PoseLandmarker.create_from_options(self.options)
         self.lock = threading.Lock()
 
     def __del__(self) -> None:
-        with self.lock:
-            if self.cam.isOpened():
-                self.cam.release()
+        self.cam.release()
         if self.landmarker:
             self.landmarker.close()
-
-    def init_cam(self) -> cv2.VideoCapture:
-        cam = cv2.VideoCapture(0)
-        cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
-        cam.set(cv2.CAP_PROP_FOCUS, 360)
-        cam.set(cv2.CAP_PROP_BRIGHTNESS, 130)
-        cam.set(cv2.CAP_PROP_SHARPNESS, 125)
-        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        return cam
 
     def draw_landmarks_on_image(
         self,
@@ -95,7 +85,7 @@ class YogaPoseDetector:
             )
         return annotated_image
 
-    def print_result(
+    def on_get_result(
         self,
         result: PoseLandmarkerResult,
         output_image: mp.Image,
@@ -105,39 +95,44 @@ class YogaPoseDetector:
             segmentation_mask = result.segmentation_masks[0].numpy_view()
             visualized_mask = (
                 np.repeat(segmentation_mask[:, :, np.newaxis], 3, axis=2) * 255
-            )
+            ).astype(np.uint8)
             self.current_mask_frame = visualized_mask
-        self.current_frame = self.draw_landmarks_on_image(
-            output_image.numpy_view(),
-            result,
-        )
 
-    async def run(self) -> AsyncGenerator[bytes, None]:
+            masked_frame = cv2.bitwise_and(
+                output_image.numpy_view().astype(np.uint8),
+                visualized_mask,
+            )
+            self.current_frame = self.draw_landmarks_on_image(
+                masked_frame,
+                result,
+            )
+
+    async def generate_frame(self) -> None:
+        frame = self.cam.get_frame()
+        mp_image = mp.Image(
+            image_format=mp.ImageFormat.SRGB,
+            data=frame,
+        )
+        self.landmarker.detect_async(mp_image, int(time.time() * 1000))
+
+    async def get_frame(self) -> AsyncGenerator[bytes, None]:
         try:
             while True:
-                with self.lock:
-                    ret, frame = self.cam.read()
-                    if not ret:
-                        break
-                    flipped = cv2.flip(frame, 1)
-                    if self.current_frame is None:
-                        self.current_frame = flipped
-                    mp_image = mp.Image(
-                        image_format=mp.ImageFormat.SRGB,
-                        data=flipped,
+                await self.generate_frame()
+
+                if self.current_frame is None:
+                    self.current_frame = self.cam.get_frame()
+
+                success, buffer = cv2.imencode(".jpg", self.current_frame)
+
+                if success:
+                    frame_bytes = buffer.tobytes()
+                    yield (
+                        b"--frame\r\n"
+                        b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
                     )
-                    self.landmarker.detect_async(mp_image, int(time.time() * 1000))
-
-                    success, buffer = cv2.imencode(".jpg", self.current_frame)
-
-                    if success:
-                        frame_bytes = buffer.tobytes()
-                        yield (
-                            b"--frame\r\n"
-                            b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
-                        )
-                    else:
-                        logger.warning("Frame encoding failed.")
+                else:
+                    logger.warning("Frame encoding failed.")
 
                 await asyncio.sleep(0)
 
