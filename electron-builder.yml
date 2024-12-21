@@ -1,0 +1,21 @@
+appId: cc.seaotter.yoga
+productName: Yoga Pose Recognition
+copyright: Copyright © 2024 Brian Chou
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+# asar: false
+extraResources:
+  - from: .venv
+    to: .venv
+  - from: yoga_pose_recognition
+    to: yoga_pose_recognition
+asarUnpack:
+  - .venv
+  - yoga_pose_recognition
+publish: null

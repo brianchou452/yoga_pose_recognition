@@ -1,3 +1,17 @@
+# dependencies
+node_modules
+
+# logs
+*.log
+
+# next.js
+.next
+next-env.d.ts
+
+# build
+/app
+dist
+
 .venv
 .mypy_cache
 __pycache__
