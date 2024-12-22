@@ -1,5 +1,4 @@
 import asyncio
-import threading
 import time
 from typing import Any, AsyncGenerator
 
@@ -12,7 +11,6 @@ from mediapipe.framework.formats import landmark_pb2
 from mediapipe.tasks.python.vision.pose_landmarker import PoseLandmarkerResult
 
 from yoga_pose_recognition.detection.body_connections import BodyConnections
-from yoga_pose_recognition.detection.models.pose import PoseData
 from yoga_pose_recognition.detection.utils.camera import Camera
 from yoga_pose_recognition.detection.utils.drawing_utils import DrawingUtils
 
@@ -26,8 +24,8 @@ class YogaPoseDetector:
     _instance = None
     current_frame = None
     current_mask_frame = None
-    pose_data: PoseData
     __drawing_utils: DrawingUtils
+    current_pose: str
 
     def __new__(
         cls,
@@ -40,7 +38,7 @@ class YogaPoseDetector:
                 *args,
                 **kwargs,
             )
-            logger.info("YogaPoseDetector instance created")
+            logger.warning("YogaPoseDetector instance created")
         return cls._instance
 
     def __init__(self) -> None:
@@ -55,8 +53,9 @@ class YogaPoseDetector:
             output_segmentation_masks=True,
         )
         self.landmarker = PoseLandmarker.create_from_options(self.options)
-        self.lock = threading.Lock()
+        self.lock = asyncio.Lock()
         self.__drawing_utils = DrawingUtils()
+        self.current_pose = "no_pose"
 
     def __del__(self) -> None:
         self.cam.release()
@@ -85,7 +84,7 @@ class YogaPoseDetector:
             )
             # logger.info(f"Pose landmarks: {pose_landmarks_proto.landmark[0]}")
             connections_style = self.__drawing_utils.get_pose_connections_style(
-                "pose1",
+                self.current_pose,
                 pose_landmarks_proto,
             )
 
@@ -129,10 +128,10 @@ class YogaPoseDetector:
         self.landmarker.detect_async(mp_image, int(time.time() * 1000))
 
     async def get_frame(self) -> AsyncGenerator[bytes, None]:
-        await self.__drawing_utils.load_pose_data()
 
         try:
             while True:
+
                 await self.generate_frame()
 
                 if self.current_frame is None:
@@ -155,3 +154,13 @@ class YogaPoseDetector:
             logger.warning("Frame generation cancelled.")
         finally:
             logger.info("Frame generator exited.")
+
+    async def set_current_pose(self, pose: str) -> None:
+        if (
+            self.__drawing_utils.pose_data is not None
+            and pose in self.__drawing_utils.pose_data
+        ):
+            self.current_pose = pose
+        else:
+            logger.warning(f"Pose {pose} not found in pose data.")
+            raise ValueError(f"Pose {pose} not found in pose data.")

@@ -1,8 +1,8 @@
 import json
 from enum import Enum
+from pathlib import Path
 from typing import Dict, Tuple
 
-import aiofiles
 import numpy as np
 from loguru import logger
 from mediapipe.framework.formats import landmark_pb2
@@ -43,12 +43,13 @@ class DrawingUtils:
 
     def __init__(self) -> None:
         self.pose_data = None
+        self.load_pose_data()
 
-    async def load_pose_data(self) -> None:
+    def load_pose_data(self) -> None:
         if self.pose_data is not None:
-            return
-        async with aiofiles.open("data/pose.json", mode="r") as f:
-            contents = await f.read()
+            logger.info("Pose data already loaded.")
+        with Path("data/pose.json").open(mode="r") as f:
+            contents = f.read()
             json_data = json.loads(contents)
             pose_data_raw = PoseData(**json_data)
             self.pose_data = {}

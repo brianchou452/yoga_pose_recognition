@@ -1,6 +1,10 @@
 {
   "poses": [
     {
+      "name": "no_pose",
+      "angles": []
+    },
+    {
       "name": "pose1",
       "angles": [
         {
