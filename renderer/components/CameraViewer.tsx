@@ -4,18 +4,26 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store";
 
 const CameraViewer: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(0);
   const poseStatus = useSelector((state: RootState) => state.pose.status);
+  const poseDuration = useSelector((state: RootState) => state.pose.duration);
+  const isPoseWrong = useSelector((state: RootState) => state.pose.isPoseWrong);
+
+  useEffect(() => {
+    if (poseStatus.startsWith("Current Pose: ")) {
+      setTimeLeft(poseDuration);
+    }
+  }, [poseStatus, poseDuration]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (poseStatus === "Pose is correct") {
-        setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 60));
+      if (!isPoseWrong) {
+        setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [poseStatus]);
+  }, [isPoseWrong]);
 
   return (
     <Box

@@ -2,6 +2,7 @@ import asyncio
 
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel
 
 from yoga_pose_recognition.detection.yoga_pose_detector import YogaPoseDetector
 
@@ -12,6 +13,10 @@ yoga_pose_detector = YogaPoseDetector()
 
 def get_yoga_pose_detector() -> YogaPoseDetector:
     return yoga_pose_detector
+
+
+class Pose(BaseModel):
+    pose_id: str
 
 
 @router.get("/frame", response_class=StreamingResponse)
@@ -27,11 +32,11 @@ async def get_frame(
 
 @router.post("/pose")
 async def post_pose(
-    pose: str,
+    pose: Pose,
     detector: YogaPoseDetector = Depends(get_yoga_pose_detector),
 ) -> JSONResponse:
     try:
-        await detector.set_current_pose(pose)
+        await detector.set_current_pose(pose.pose_id)
     except ValueError as e:
         return JSONResponse(
             status_code=400,
