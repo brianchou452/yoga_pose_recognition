@@ -103,7 +103,7 @@ class DrawingUtils:
         self,
         pose_name: str,
         pose_landmarks_proto: landmark_pb2.NormalizedLandmarkList,
-    ) -> Dict[Tuple[int, int], Tuple[int, int, int]]:
+    ) -> Dict[Tuple[int, int], DrawingSpec]:
         connections_style = {}
         if self.pose_data is None:
             raise ValueError("Pose data is not loaded.")

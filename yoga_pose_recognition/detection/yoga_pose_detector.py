@@ -12,7 +12,11 @@ from mediapipe.tasks.python.vision.pose_landmarker import PoseLandmarkerResult
 
 from yoga_pose_recognition.detection.body_connections import BodyConnections
 from yoga_pose_recognition.detection.utils.camera import Camera
-from yoga_pose_recognition.detection.utils.drawing_utils import DrawingUtils
+from yoga_pose_recognition.detection.utils.drawing_utils import (
+    _BODY_CONNECTION_STYLE,
+    ConnectionsStyleAttribute,
+    DrawingUtils,
+)
 
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
@@ -22,10 +26,11 @@ VisionRunningMode = mp.tasks.vision.RunningMode
 
 class YogaPoseDetector:
     _instance = None
+    __drawing_utils: DrawingUtils
     current_frame = None
     current_mask_frame = None
-    __drawing_utils: DrawingUtils
     current_pose: str
+    is_current_frame_wrong: bool
 
     def __new__(
         cls,
@@ -53,9 +58,9 @@ class YogaPoseDetector:
             output_segmentation_masks=True,
         )
         self.landmarker = PoseLandmarker.create_from_options(self.options)
-        self.lock = asyncio.Lock()
         self.__drawing_utils = DrawingUtils()
         self.current_pose = "no_pose"
+        self.is_current_frame_wrong = False
 
     def __del__(self) -> None:
         self.cam.release()
@@ -82,7 +87,6 @@ class YogaPoseDetector:
                     for landmark in pose_landmarks
                 ],
             )
-            # logger.info(f"Pose landmarks: {pose_landmarks_proto.landmark[0]}")
             connections_style = self.__drawing_utils.get_pose_connections_style(
                 self.current_pose,
                 pose_landmarks_proto,
@@ -95,6 +99,14 @@ class YogaPoseDetector:
                 landmark_drawing_spec=solutions.drawing_styles.get_default_pose_landmarks_style(),
                 connection_drawing_spec=connections_style,
             )
+
+            is_wrong = False
+            for style in connections_style.values():
+                if style == _BODY_CONNECTION_STYLE[ConnectionsStyleAttribute.WRONG]:
+                    is_wrong = True
+                    break
+            self.is_current_frame_wrong = is_wrong
+
         return annotated_image
 
     def on_get_result(

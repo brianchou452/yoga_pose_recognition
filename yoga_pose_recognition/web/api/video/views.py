@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+import asyncio
+
+from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from yoga_pose_recognition.detection.yoga_pose_detector import YogaPoseDetector
@@ -38,3 +40,15 @@ async def post_pose(
     return JSONResponse(
         content={"message": "Pose set successfully"},
     )
+
+
+@router.websocket("/is_pose_wrong/ws")
+async def recognition_websocket(
+    *,
+    websocket: WebSocket,
+    detector: YogaPoseDetector = Depends(get_yoga_pose_detector),
+) -> None:
+    await websocket.accept()
+    while True:
+        await websocket.send_text(f"{detector.is_current_frame_wrong}")
+        await asyncio.sleep(0.1)
