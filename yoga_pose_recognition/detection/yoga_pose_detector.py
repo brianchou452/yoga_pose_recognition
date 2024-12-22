@@ -11,7 +11,10 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe.tasks.python.vision.pose_landmarker import PoseLandmarkerResult
 
+from yoga_pose_recognition.detection.body_connections import BodyConnections
+from yoga_pose_recognition.detection.models.pose import PoseData
 from yoga_pose_recognition.detection.utils.camera import Camera
+from yoga_pose_recognition.detection.utils.drawing_utils import DrawingUtils
 
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
@@ -23,6 +26,8 @@ class YogaPoseDetector:
     _instance = None
     current_frame = None
     current_mask_frame = None
+    pose_data: PoseData
+    __drawing_utils: DrawingUtils
 
     def __new__(
         cls,
@@ -39,7 +44,7 @@ class YogaPoseDetector:
         return cls._instance
 
     def __init__(self) -> None:
-        self.cam = Camera(1)
+        self.cam = Camera(0)
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(
                 model_asset_path="models/pose_landmarker_full.task",
@@ -51,6 +56,7 @@ class YogaPoseDetector:
         )
         self.landmarker = PoseLandmarker.create_from_options(self.options)
         self.lock = threading.Lock()
+        self.__drawing_utils = DrawingUtils()
 
     def __del__(self) -> None:
         self.cam.release()
@@ -77,11 +83,18 @@ class YogaPoseDetector:
                     for landmark in pose_landmarks
                 ],
             )
-            solutions.drawing_utils.draw_landmarks(
-                annotated_image,
+            # logger.info(f"Pose landmarks: {pose_landmarks_proto.landmark[0]}")
+            connections_style = self.__drawing_utils.get_pose_connections_style(
+                "pose1",
                 pose_landmarks_proto,
-                solutions.pose.POSE_CONNECTIONS,
-                solutions.drawing_styles.get_default_pose_landmarks_style(),
+            )
+
+            solutions.drawing_utils.draw_landmarks(
+                image=annotated_image,
+                landmark_list=pose_landmarks_proto,
+                connections=[e.value for e in BodyConnections],
+                landmark_drawing_spec=solutions.drawing_styles.get_default_pose_landmarks_style(),
+                connection_drawing_spec=connections_style,
             )
         return annotated_image
 
@@ -116,6 +129,8 @@ class YogaPoseDetector:
         self.landmarker.detect_async(mp_image, int(time.time() * 1000))
 
     async def get_frame(self) -> AsyncGenerator[bytes, None]:
+        await self.__drawing_utils.load_pose_data()
+
         try:
             while True:
                 await self.generate_frame()

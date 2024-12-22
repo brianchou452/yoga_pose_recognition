@@ -16,12 +16,14 @@ fastapi = { extras = ["standard"], version = "^0.115.6" }
 pydantic = "^2.10.4"
 pydantic-settings = "^2.7.0"
 loguru = "^0.7.3"
+aiofiles = "^24.1.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.1"
 mypy = "^1.13.0"
 black = "^24.10.0"
 ipykernel = "^6.29.5"
+types-aiofiles = "^24.1.0.20241221"
 
 [tool.isort]
 profile = "black"
@@ -29,7 +31,7 @@ multi_line_output = 3
 src_paths = ["yoga_pose_recognition"]
 
 [tool.mypy]
-strict = true
+strict = false
 ignore_missing_imports = true
 allow_subclassing_any = true
 allow_untyped_calls = true

@@ -1,0 +1,19 @@
+{
+  "poses": [
+    {
+      "name": "pose1",
+      "angles": [
+        {
+          "connection1": "LEFT_SHOULDER_TO_RIGHT_SHOULDER",
+          "connection2": "LEFT_SHOULDER_TO_LEFT_ELBOW",
+          "value": 90
+        },
+        {
+          "connection1": "LEFT_SHOULDER_TO_RIGHT_SHOULDER",
+          "connection2": "RIGHT_SHOULDER_TO_RIGHT_ELBOW",
+          "value": 90
+        }
+      ]
+    }
+  ]
+}
