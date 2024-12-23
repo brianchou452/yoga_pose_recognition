@@ -3,6 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, Tuple
 
+import cv2
 import numpy as np
 from loguru import logger
 from mediapipe.framework.formats import landmark_pb2
@@ -55,6 +56,31 @@ class DrawingUtils:
             self.pose_data = {}
             for pose in pose_data_raw.poses:
                 self.pose_data[pose.name] = pose
+
+    def load_background_image(self, image_path: str) -> np.ndarray:
+        image = cv2.imread(image_path)
+        if image is None:
+            raise FileNotFoundError(f"Image not found: {image_path}")
+        h, w = image.shape[:2]
+        target_w, target_h = 1280, 720
+        aspect_ratio = w / h
+        target_ratio = target_w / target_h
+
+        if aspect_ratio > target_ratio:
+            new_w = target_w
+            new_h = int(new_w / aspect_ratio)
+        else:
+            new_h = target_h
+            new_w = int(new_h * aspect_ratio)
+
+        resized = cv2.resize(image, (new_w, new_h))
+
+        bg = np.zeros((target_h, target_w, 3), dtype=np.uint8)
+        start_x = (target_w - new_w) // 2
+        start_y = (target_h - new_h) // 2
+        bg[start_y : start_y + new_h, start_x : start_x + new_w] = resized
+
+        return bg
 
     def extract_xyz(
         self,

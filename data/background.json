@@ -1,0 +1,24 @@
+{
+  "backgrounds": [
+    {
+      "id": 1,
+      "name": "圖片1",
+      "path": "data/images/abstract-background-vector-illustration-concept_1317464-22143.jpeg"
+    },
+    {
+      "id": 2,
+      "name": "圖片2",
+      "path": "data/images/hand-drawn-adventure-background_23-2149048448.jpeg"
+    },
+    {
+      "id": 3,
+      "name": "圖片3",
+      "path": "data/images/lone-tree-landscape-spring-lake-surreal-nature-aesthetic-spring.jpg"
+    },
+    {
+      "id": 4,
+      "name": "圖片4",
+      "path": "data/images/peaceful-sunset-serene-lake-surrounded-by-nature-art-illustration_494980-15884.jpeg"
+    }
+  ]
+}

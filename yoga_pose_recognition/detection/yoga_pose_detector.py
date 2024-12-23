@@ -31,6 +31,7 @@ class YogaPoseDetector:
     current_mask_frame = None
     current_pose: str
     is_current_frame_wrong: bool
+    background_image: np.ndarray | None
 
     def __new__(
         cls,
@@ -61,6 +62,7 @@ class YogaPoseDetector:
         self.__drawing_utils = DrawingUtils()
         self.current_pose = "no_pose"
         self.is_current_frame_wrong = False
+        self.background_image = None
 
     def __del__(self) -> None:
         self.cam.release()
@@ -126,6 +128,12 @@ class YogaPoseDetector:
                 output_image.numpy_view().astype(np.uint8),
                 visualized_mask,
             )
+            if self.background_image is not None:
+                nonzero_mask = visualized_mask != 0
+                background_copy = self.background_image.copy()
+                background_copy[nonzero_mask] = masked_frame[nonzero_mask]
+                masked_frame = background_copy
+
             self.current_frame = self.draw_landmarks_on_image(
                 masked_frame,
                 result,
@@ -176,3 +184,6 @@ class YogaPoseDetector:
         else:
             logger.warning(f"Pose {pose} not found in pose data.")
             raise ValueError(f"Pose {pose} not found in pose data.")
+
+    async def load_background_image(self, path: str) -> None:
+        self.background_image = self.__drawing_utils.load_background_image(path)

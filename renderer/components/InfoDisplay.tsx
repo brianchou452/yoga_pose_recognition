@@ -20,11 +20,20 @@ interface Course {
   poses: { id: string; server_id: string; name: string; duration: number }[];
 }
 
+interface Background {
+  id: number;
+  name: string;
+  path: string;
+}
+
 const InfoDisplay: React.FC = () => {
   const dispatch = useDispatch();
   const poseStatus = useSelector((state: RootState) => state.pose.status);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedBackground, setSelectedBackground] =
+    useState<Background | null>(null);
   const [currentPoseId, setCurrentPoseId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,13 +43,36 @@ const InfoDisplay: React.FC = () => {
       setCourses(data.courses);
     };
 
+    const fetchBackgrounds = async () => {
+      const response = await fetch(
+        "http://localhost:8000/api/video/background"
+      );
+      const data = await response.json();
+      setBackgrounds(data.backgrounds);
+    };
+
     fetchCourses();
+    fetchBackgrounds();
   }, []);
 
   const handleCourseChange = (event: SelectChangeEvent<number>) => {
     const courseId = event.target.value as number;
     const course = courses.find((course) => course.id === courseId) || null;
     setSelectedCourse(course);
+  };
+
+  const handleBackgroundChange = async (event: SelectChangeEvent<number>) => {
+    const backgroundId = event.target.value as number;
+    const background =
+      backgrounds.find((background) => background.id === backgroundId) || null;
+    setSelectedBackground(background);
+    await fetch("http://localhost:8000/api/video/background", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ path: background.path }),
+    });
   };
 
   const setServerPoseId = async (poseId: string) => {
@@ -127,6 +159,21 @@ const InfoDisplay: React.FC = () => {
           Start
         </Button>
       </Box>
+      <Select
+        value={selectedBackground?.id || ""}
+        onChange={handleBackgroundChange}
+        displayEmpty
+        sx={{ width: "80%", mt: 2 }}
+      >
+        <MenuItem value="" disabled>
+          Select a background
+        </MenuItem>
+        {backgrounds.map((background) => (
+          <MenuItem key={background.id} value={background.id}>
+            {background.name}
+          </MenuItem>
+        ))}
+      </Select>
       {selectedCourse && (
         <Box sx={{ mt: 2, overflowY: "auto", width: "100%" }}>
           <Typography variant="h6">Poses</Typography>

@@ -1,5 +1,7 @@
 import asyncio
+import json
 
+import aiofiles
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
@@ -17,6 +19,10 @@ def get_yoga_pose_detector() -> YogaPoseDetector:
 
 class Pose(BaseModel):
     pose_id: str
+
+
+class Background(BaseModel):
+    path: str
 
 
 @router.get("/frame", response_class=StreamingResponse)
@@ -57,3 +63,28 @@ async def recognition_websocket(
     while True:
         await websocket.send_text(f"{detector.is_current_frame_wrong}")
         await asyncio.sleep(0.5)
+
+
+@router.post("/background")
+async def post_background(
+    bg: Background,
+    detector: YogaPoseDetector = Depends(get_yoga_pose_detector),
+) -> JSONResponse:
+    try:
+        await detector.load_background_image(bg.path)
+    except FileNotFoundError as e:
+        return JSONResponse(
+            status_code=400,
+            content={"message": str(e)},
+        )
+    return JSONResponse(
+        content={"message": "Background set successfully"},
+    )
+
+
+@router.get("/background")
+async def get_background() -> JSONResponse:
+    async with aiofiles.open("data/background.json", mode="r") as f:
+        contents = await f.read()
+        json_data = json.loads(contents)
+        return JSONResponse(content=json_data)
