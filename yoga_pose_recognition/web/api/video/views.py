@@ -56,4 +56,4 @@ async def recognition_websocket(
     await websocket.accept()
     while True:
         await websocket.send_text(f"{detector.is_current_frame_wrong}")
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.5)

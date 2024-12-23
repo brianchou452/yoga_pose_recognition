@@ -1,29 +1,10 @@
 import { Box, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
 
 const CameraViewer: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState(0);
-  const poseStatus = useSelector((state: RootState) => state.pose.status);
-  const poseDuration = useSelector((state: RootState) => state.pose.duration);
-  const isPoseWrong = useSelector((state: RootState) => state.pose.isPoseWrong);
-
-  useEffect(() => {
-    if (poseStatus.startsWith("Current Pose: ")) {
-      setTimeLeft(poseDuration);
-    }
-  }, [poseStatus, poseDuration]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isPoseWrong) {
-        setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isPoseWrong]);
+  const timeLeft = useSelector((state: RootState) => state.pose.timeLeft);
 
   return (
     <Box

@@ -21,13 +21,13 @@
           "id": 3,
           "server_id": "no_pose",
           "name": "No Pose",
-          "duration": 3
+          "duration": 5
         },
         {
           "id": 4,
           "server_id": "pose1",
           "name": "Pose 1",
-          "duration": 5
+          "duration": 10
         }
       ]
     },
