@@ -9,13 +9,11 @@ files:
     filter:
       - package.json
       - app
-# asar: false
-extraResources:
-  - from: .venv
-    to: .venv
-  - from: yoga_pose_recognition
-    to: yoga_pose_recognition
+      - .venv
+      - data
+      - yoga_pose_recognition
 asarUnpack:
   - .venv
   - yoga_pose_recognition
+  - data
 publish: null
