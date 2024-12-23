@@ -148,26 +148,26 @@ class DrawingUtils:
                 [
                     pose_landmarks_proto.landmark[x].x,
                     pose_landmarks_proto.landmark[x].y,
-                    pose_landmarks_proto.landmark[x].z,
+                    # pose_landmarks_proto.landmark[x].z, # 立體空間的角度比較難定義姿勢，所以先關閉
                 ],
             )
             point2 = np.array(
                 [
                     pose_landmarks_proto.landmark[y].x,
                     pose_landmarks_proto.landmark[y].y,
-                    pose_landmarks_proto.landmark[y].z,
+                    # pose_landmarks_proto.landmark[y].z,
                 ],
             )
             point3 = np.array(
                 [
                     pose_landmarks_proto.landmark[z].x,
                     pose_landmarks_proto.landmark[z].y,
-                    pose_landmarks_proto.landmark[z].z,
+                    # pose_landmarks_proto.landmark[z].z,
                 ],
             )
             calculated_angle = self.calculate_angle(point1, point2, point3)
 
-            if abs(calculated_angle - angle.value) < 10:  # Allow some tolerance
+            if abs(calculated_angle - angle.value) < 20:  # Allow some tolerance
                 connections_style[connection1] = _BODY_CONNECTION_STYLE[
                     ConnectionsStyleAttribute.CORRECT
                 ]
@@ -181,6 +181,10 @@ class DrawingUtils:
                 connections_style[connection2] = _BODY_CONNECTION_STYLE[
                     ConnectionsStyleAttribute.WRONG
                 ]
+                # logger.info(f"angle.connection1: {angle.connection1}")
+                # logger.info(f"angle.connection2: {angle.connection2}")
+                # logger.info(f"Calculated angle: {calculated_angle}")
+                # logger.info(f"Expected angle: {angle.value}")
 
         for connection in BodyConnections:
             if connection.value not in connections_style:

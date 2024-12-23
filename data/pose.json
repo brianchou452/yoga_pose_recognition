@@ -18,6 +18,76 @@
           "value": 90
         }
       ]
+    },
+    {
+      "name": "triangle_pose",
+      "angles": [
+        {
+          "connection1": "RIGHT_SHOULDER_TO_RIGHT_HIP",
+          "connection2": "RIGHT_SHOULDER_TO_RIGHT_ELBOW",
+          "value": 80
+        },
+        {
+          "connection1": "LEFT_SHOULDER_TO_LEFT_HIP",
+          "connection2": "LEFT_SHOULDER_TO_LEFT_ELBOW",
+          "value": 105
+        },
+        {
+          "connection1": "RIGHT_SHOULDER_TO_RIGHT_ELBOW",
+          "connection2": "RIGHT_ELBOW_TO_RIGHT_WRIST",
+          "value": 180
+        },
+        {
+          "connection1": "LEFT_SHOULDER_TO_LEFT_ELBOW",
+          "connection2": "LEFT_ELBOW_TO_LEFT_WRIST",
+          "value": 180
+        },
+        {
+          "connection1": "RIGHT_HIP_TO_RIGHT_KNEE",
+          "connection2": "RIGHT_KNEE_TO_RIGHT_ANKLE",
+          "value": 180
+        },
+        {
+          "connection1": "LEFT_HIP_TO_LEFT_KNEE",
+          "connection2": "LEFT_KNEE_TO_LEFT_ANKLE",
+          "value": 180
+        }
+      ]
+    },
+    {
+      "name": "tadasana",
+      "angles": [
+        {
+          "connection1": "RIGHT_SHOULDER_TO_RIGHT_HIP",
+          "connection2": "RIGHT_SHOULDER_TO_RIGHT_ELBOW",
+          "value": 15
+        },
+        {
+          "connection1": "LEFT_SHOULDER_TO_LEFT_HIP",
+          "connection2": "LEFT_SHOULDER_TO_LEFT_ELBOW",
+          "value": 15
+        },
+        {
+          "connection1": "RIGHT_HIP_TO_RIGHT_KNEE",
+          "connection2": "RIGHT_KNEE_TO_RIGHT_ANKLE",
+          "value": 180
+        },
+        {
+          "connection1": "LEFT_HIP_TO_LEFT_KNEE",
+          "connection2": "LEFT_KNEE_TO_LEFT_ANKLE",
+          "value": 180
+        },
+        {
+          "connection1": "RIGHT_SHOULDER_TO_RIGHT_ELBOW",
+          "connection2": "RIGHT_ELBOW_TO_RIGHT_WRIST",
+          "value": 165
+        },
+        {
+          "connection1": "LEFT_SHOULDER_TO_LEFT_ELBOW",
+          "connection2": "LEFT_ELBOW_TO_LEFT_WRIST",
+          "value": 165
+        }
+      ]
     }
   ]
 }

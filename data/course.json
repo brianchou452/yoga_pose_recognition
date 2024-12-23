@@ -2,7 +2,7 @@
   "courses": [
     {
       "id": 1,
-      "name": "Course 1",
+      "name": "測試 1",
       "description": "Description 1",
       "poses": [
         {
@@ -33,7 +33,7 @@
     },
     {
       "id": 2,
-      "name": "Course 2",
+      "name": "新手入門課程",
       "description": "Description 2",
       "poses": [
         {
@@ -44,20 +44,20 @@
         },
         {
           "id": 2,
-          "server_id": "pose1",
-          "name": "Pose 1",
-          "duration": 3
+          "server_id": "tadasana",
+          "name": "山式",
+          "duration": 10
         },
         {
           "id": 3,
-          "server_id": "no_pose",
-          "name": "No Pose",
-          "duration": 4
+          "server_id": "triangle_pose",
+          "name": "三角式",
+          "duration": 20
         },
         {
           "id": 4,
-          "server_id": "pose1",
-          "name": "Pose 1",
+          "server_id": "tadasana",
+          "name": "山式",
           "duration": 5
         }
       ]
