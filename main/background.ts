@@ -26,10 +26,9 @@ if (isProd) {
   })
 
   // 動態設置 Python 解釋器的路徑
-  const pythonDir = os.platform() === 'win32' ? 'Scripts' : 'bin';
   const pythonPathDev = os.platform() === 'win32' ? '.venv\\Scripts\\python.exe' : '.venv/bin/python';
   const pythonPath = isProd
-    ? path.join(process.resourcesPath, '.venv', pythonDir, 'python')
+    ? path.join(process.resourcesPath, pythonPathDev)
     : pythonPathDev;
 
   // 啟動 Python 腳本
@@ -49,7 +48,7 @@ if (isProd) {
   } else {
     const port = process.argv[2]
     await mainWindow.loadURL(`http://localhost:${port}/home`)
-    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools()
   }
 })()
 
